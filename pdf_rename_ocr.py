@@ -25,6 +25,7 @@ import re
 import os
 
 
+"""
 # Loop performs the following actions:
 # 1. Open each pdf file in the working directory.
 # 2. Convert file to image and save image.
@@ -32,6 +33,7 @@ import os
 # 4. Rename file based on parsed text.
 # 5. If parsing is unsuccessful or the parsed name is too large (>100 chars), renames the file with "notChanged" prefix
 # Set working directory to folder containing pdf files
+"""
 for file in os.listdir('.'):
     if file.lower()[-3:] != 'pdf':
         continue
@@ -48,6 +50,7 @@ for file in os.listdir('.'):
     
     # generate text from image
     text = pytesseract.image_to_string(image, lang='eng')
+    print()
     
     # parsing date of format Month DD, YYYY
     date = re.search(r'\s{1}\D{2,9}\s{1}\d{0,2},\s{1}\d{4}',text)
@@ -59,12 +62,13 @@ for file in os.listdir('.'):
     except:
         date = ''
     
+    # parse conditional/unconditional
     if re.search(r'UNCONDITIONAL',text) == None:
         lwType = 'LWC'
     else:
         lwType = 'LWU'
     
-    sub = re.search(r'Undersigned Lienor.{2,20}',text)
+    sub = re.search(r'Undersigned Lienor.{2}(\w{2,15}\s){1,3}',text)
     
     try:
         sub = sub.group(0)
@@ -73,6 +77,7 @@ for file in os.listdir('.'):
     except:
         sub = ''
     
+    # Parse Invoice number
     invNo = re.search(r'Invoice/Payment Number.{4,7}',text)
     try:
         invNo = invNo.group(0)
@@ -81,6 +86,7 @@ for file in os.listdir('.'):
     except:
         invNo = ''
     
+    # Search Amount
     amt = re.search(r'Payment Amount.{4,15}',text)
     
     try:
@@ -90,6 +96,7 @@ for file in os.listdir('.'):
     except:
         amt = ''
     
+    # parse parent company
     toCompany = re.search(r'to\D{5,}on the job of',text)
     try:
         toCompany = toCompany.group(0)
@@ -102,6 +109,7 @@ for file in os.listdir('.'):
     except:
         toCompany = ''
     
+    # Join parts together to form name + error handling
     print(lwType)
     print(sub)
     print(invNo)
@@ -115,9 +123,3 @@ for file in os.listdir('.'):
         os.rename(file,createdName)
     except:
         continue
-
-    
-    
-
-
-
